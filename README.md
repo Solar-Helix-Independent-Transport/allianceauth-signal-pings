@@ -1,6 +1,6 @@
 # Signal Pings
 
-This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/allianceauth) to send a "signal" to a discord weebhook when a user does something in auth.
+This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/allianceauth) to send a "signal" to a discord webhook when a user does something in auth.
 
 ## Current Signals
 
@@ -15,7 +15,7 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 ## Setup
 
 1. `pip install allianceauth-signal-pings`
-2. add `'signalpings',` to installed_apps in your local.py
+2. add `'signalpings',` to INSTALLED_APPS in your local.py
 3. migrate database and restart auth
 4. Setup your webhooks in the admin panel 
 5. setup groups to ping in the admin panel
@@ -29,7 +29,7 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 ### Admin create groups to signal
 ![Imgur](https://i.imgur.com/R7Fb7S9.png)
 
-##  Pings
+###  Pings
 ![Imgur](https://i.imgur.com/UfojsOk.png)
 
 ## Contribute

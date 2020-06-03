@@ -15,7 +15,8 @@ setup(
     license='MIT',
     description='Pings for Signals!',
     long_description=README,
-    long_description_content_type='text/markdown',    
+    long_description_content_type='text/markdown', 
+    url='https://github.com/pvyParts/allianceauth-signal-pings',
     author='Aaron Kable',
     author_email='aaronkable@gmail.com',
     classifiers=[
