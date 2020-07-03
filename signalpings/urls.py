@@ -7,5 +7,4 @@ app_name = 'signalpings'
 urlpatterns = [
 ]
 
-
-# no urls
+# no urls admmin app

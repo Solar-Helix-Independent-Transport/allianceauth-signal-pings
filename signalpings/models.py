@@ -3,6 +3,7 @@ import json
 
 from django.db import models
 from django.contrib.auth.models import Group
+from allianceauth.eveonline.models import EveCorporationInfo
 
 class WebHook(models.Model):
     """Discord Webhook for pings"""
@@ -36,4 +37,45 @@ class GroupSignal(models.Model):
     class Meta:
         verbose_name = 'Group Signal'
         verbose_name_plural = 'Group Signals'
+
+class FleetSignal(models.Model):
+    """Fleet Timer Create/Delete pings"""
+
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+
+    ignore_past_fleets = models.BooleanField(default=True)
+
+    def __str__(self):
+        return 'Send Fleets to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'Fleet Signal'
+        verbose_name_plural = 'Fleet Signals'
+
+class TimerSignal(models.Model):
+    """Timer Board Create/Delete pings"""
+
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+
+    ignore_past_timers = models.BooleanField(default=True)
+
+    def __str__(self):
+        return 'Send Timers to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'Timer Board Signal'
+        verbose_name_plural = 'Timer Board Signals'
+
+class HRAppSignal(models.Model):
+    """Timer Board Create/Delete pings"""
+
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+    corporation = models.ForeignKey(EveCorporationInfo, on_delete=models.CASCADE, blank=True, null=True, default=None)    
+
+    def __str__(self):
+        return 'Send HR to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'HR Application Signal'
+        verbose_name_plural = 'HR Application Signals'
 
