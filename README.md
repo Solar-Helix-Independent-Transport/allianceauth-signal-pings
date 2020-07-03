@@ -5,11 +5,11 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 ## Current Signals
 
 - Group Join / Group Leave
+- HR applications
+- Timers and Fleets
 
 ## TODO/Wishlist
 
-- HR applications
-- Timers and Fleets
 - Some translations
 
 ## Setup
