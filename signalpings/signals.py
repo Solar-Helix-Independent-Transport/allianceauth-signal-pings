@@ -16,6 +16,10 @@ from .helpers import time_helpers
 import logging
 logger = logging.getLogger(__name__)
 
+RED = 16711710
+BLUE = 42751
+GREEN = 6684416
+
 @receiver(post_save, sender=GroupRequest)
 def new_req(sender, instance, created, **kwargs):
     if created:
@@ -28,11 +32,13 @@ def new_req(sender, instance, created, **kwargs):
             if not instance.leave_request:
                 embed = {'title': "New Group Request", 
                     'description': ("From **{}** to join **{}**".format(main_char.character_name,group)),
+                    'color': BLUE,
                     'image': {'url': main_char.portrait_url_128 },
                     'url': url
                     }
             else:
                 embed = {'title': "New Group Leave Request", 
+                    'color': RED,
                     'description': ("From **{}** to leave **{}**".format(main_char.character_name,group)),
                     'image': {'url': main_char.portrait_url_128 },
                     'url': url
@@ -53,45 +59,53 @@ def timer_saved(sender, instance, created, **kwargs):
     logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
     try:
         corp_timer = instance.corp_timer
-
-        if not corp_timer:
-            url = get_site_url() + "/timers/"
-            main_char = instance.user.profile.main_character
-            system = instance.system
-            structure = instance.structure
-            eve_time = instance.eve_time
-            details = instance.details
-            message = "New Timer Posted"
-            if not created:
-                message = "Timer Updated"
-
-
-            embed = {'title': message, 
-                    'description': ("**{}** in **{}**\n\n{}".format(structure,system,details)),
-                    'url': url,
-                    "fields": [
-                        {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
-                        },
-                        {
-                        "name": "Time Until",
-                        "value": time_helpers.get_time_until(eve_time)
-                        }
-
-                    ],
-                    "footer": {
-                        "icon_url": main_char.portrait_url_64,
-                        "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
+        if corp_timer:
+            corp = instance.user.profile.main_character.corporation
+        url = get_site_url() + "/timers/"
+        main_char = instance.user.profile.main_character
+        system = instance.system
+        structure = instance.structure
+        eve_time = instance.eve_time
+        details = instance.details
+        message = "New Timer Posted"
+        col = GREEN
+        if not created:
+            message = "Timer Updated"
+            col = BLUE
+        restricted = ""
+        if corp_timer:
+            restricted = "Restricted to {}".format(corp)
+        embed = {'title': message, 
+                'description': ("**{}** in **{}**\n\n{}\n{}".format(structure,system,details,restricted)),
+                'url': url,
+                'color': col,
+                "fields": [
+                    {
+                    "name": "Eve Time",
+                    "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                    },
+                    {
+                    "name": "Time Until",
+                    "value": time_helpers.get_time_until(eve_time)
                     }
-                }
 
-            hooks = TimerSignal.objects.all().select_related('webhook')
-            old = datetime.datetime.now(timezone.utc) > eve_time
-            for hook in hooks:
-                if hook.webhook.enabled:
-                    if old and hook.ignore_past_timers:
-                        continue
+                ],
+                "footer": {
+                    "icon_url": main_char.portrait_url_64,
+                    "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
+                }
+            }
+
+        hooks = TimerSignal.objects.all().select_related('webhook')
+        old = datetime.datetime.now(timezone.utc) > eve_time
+        for hook in hooks:
+            if hook.webhook.enabled:
+                if old and hook.ignore_past_timers:
+                    continue
+                if hook.corporation is not None:
+                    if corp == hook.corporation:
+                        hook.webhook.send_embed(embed)
+                elif not corp_timer:
                     hook.webhook.send_embed(embed)
 
     except Exception as e:
@@ -104,37 +118,47 @@ def timer_deleted(sender, instance, **kwargs):
     try:
         corp_timer = instance.corp_timer
 
-        if not corp_timer:
-            url = get_site_url() + "/timers/"
-            main_char = instance.user.profile.main_character
-            system = instance.system
-            structure = instance.structure
-            eve_time = instance.eve_time
-            details = instance.details
-            message = "Timer Deleted"
+        corp_timer = instance.corp_timer
+        if corp_timer:
+            corp = instance.user.profile.main_character.corporation
+        url = get_site_url() + "/timers/"
+        main_char = instance.user.profile.main_character
+        system = instance.system
+        structure = instance.structure
+        eve_time = instance.eve_time
+        details = instance.details
+        message = "Timer Deleted"
+        restricted = ""
+        if corp_timer:
+            restricted = "Restricted to {}".format(corp)
 
 
-            embed = {'title': message, 
-                    'description': ("**{}** in **{}** has been removed\n\n{}".format(structure,system,details)),
-                    'url': url,
-                    "fields": [
-                        {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
-                        },
-                    ],
-                    "footer": {
-                        "icon_url": main_char.portrait_url_64,
-                        "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
-                    }
+        embed = {'title': message, 
+                'description': ("**{}** in **{}** has been removed\n\n{}\n{}".format(structure,system,details,restricted)),
+                'url': url,
+                'color': RED,
+                "fields": [
+                    {
+                    "name": "Eve Time",
+                    "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                    },
+                ],
+                "footer": {
+                    "icon_url": main_char.portrait_url_64,
+                    "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
                 }
+            }
 
-            hooks = TimerSignal.objects.all().select_related('webhook')
-            old = datetime.datetime.now(timezone.utc) > eve_time
-            for hook in hooks:
-                if hook.webhook.enabled:
-                    if old and hook.ignore_past_timers:
-                        continue
+        hooks = TimerSignal.objects.all().select_related('webhook')
+        old = datetime.datetime.now(timezone.utc) > eve_time
+        for hook in hooks:
+            if hook.webhook.enabled:
+                if old and hook.ignore_past_timers:
+                    continue
+                if hook.corporation is not None:
+                    if corp == hook.corporation:
+                        hook.webhook.send_embed(embed)
+                elif not corp_timer:
                     hook.webhook.send_embed(embed)
 
     except Exception as e:
@@ -152,14 +176,17 @@ def fleet_saved(sender, instance, created, **kwargs):
         doctrine = instance.doctrine
         eve_time = instance.start
         fc = instance.fc
+        col = GREEN
         message = "New Fleet Timer Posted"
         if not created:
             message = "Fleet Timer Updated"
+            col = BLUE
 
 
         embed = {'title': message, 
                 'description': ("**{}** from **{}**".format(operation_name,system)),
                 'url': url,
+                'color': col,
                 "fields": [
                     {
                     "name": "FC",
@@ -217,6 +244,7 @@ def fleet_deleted(sender, instance, **kwargs):
         embed = {'title': message, 
                 'description': ("**{}** from **{}** has been cancelled".format(operation_name,system)),
                 'url': url,
+                'color': RED,
                 "fields": [
                     {
                     "name": "FC",
@@ -260,6 +288,7 @@ def application_saved(sender, instance, created, **kwargs):
         embed = {'title': message, 
                 'description': ("**{}** Applied to **{}**".format(main_char,corp)),
                 'url': url,
+                'color': GREEN,
                 "footer": {
                     "icon_url": main_char.portrait_url_64,
                     "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)

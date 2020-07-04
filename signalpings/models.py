@@ -58,6 +58,7 @@ class TimerSignal(models.Model):
     webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
 
     ignore_past_timers = models.BooleanField(default=True)
+    corporation = models.ForeignKey(EveCorporationInfo, on_delete=models.CASCADE, blank=True, null=True, default=None)    
 
     def __str__(self):
         return 'Send Timers to "{}"'.format(self.webhook.name)
