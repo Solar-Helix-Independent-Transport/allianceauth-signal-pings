@@ -29,7 +29,7 @@ if timers_active():
 @receiver(post_save, sender=GroupRequest)
 def new_req(sender, instance, created, **kwargs):
     if created:
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             url = get_site_url() + "/group/management/"
             main_char = instance.user.profile.main_character
@@ -57,13 +57,13 @@ def new_req(sender, instance, created, **kwargs):
                     hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
 if timers_active():
     @receiver(post_save, sender=Timer)
     def timer_saved(sender, instance, created, **kwargs):
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             corp_timer = instance.corp_timer
             if corp_timer:
@@ -116,12 +116,12 @@ if timers_active():
                         hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it... dont stop th UI
 
     @receiver(pre_delete, sender=Timer)
     def timer_deleted(sender, instance, **kwargs):
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             corp_timer = instance.corp_timer
 
@@ -169,13 +169,13 @@ if timers_active():
                         hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it... dont stop th UI
 
 if fleets_active():
     @receiver(post_save, sender=OpTimer)
     def fleet_saved(sender, instance, created, **kwargs):
-        logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimers/"
             main_char = instance.eve_character
@@ -231,12 +231,12 @@ if fleets_active():
                     hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
     @receiver(pre_delete, sender=OpTimer)
     def fleet_deleted(sender, instance, **kwargs):
-        logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimers/"
             main_char = instance.eve_character
@@ -281,13 +281,13 @@ if fleets_active():
                     hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
 if hr_active():
     @receiver(post_save, sender=Application)
     def application_saved(sender, instance, created, **kwargs):
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             url = get_site_url() + "/hr/"
             main_char = instance.user.profile.main_character
@@ -314,5 +314,5 @@ if hr_active():
                         hook.webhook.send_embed(embed)
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             pass  # shits fucked... Don't worry about it...
