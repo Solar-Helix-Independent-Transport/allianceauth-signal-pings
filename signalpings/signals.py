@@ -177,7 +177,7 @@ if fleets_active():
     def fleet_saved(sender, instance, created, **kwargs):
         #logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
-            url = get_site_url() + "/optimers/"
+            url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
             system = instance.system
             operation_name = instance.operation_name
@@ -238,7 +238,7 @@ if fleets_active():
     def fleet_deleted(sender, instance, **kwargs):
         #logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
-            url = get_site_url() + "/optimers/"
+            url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
             system = instance.system
             operation_name = instance.operation_name
