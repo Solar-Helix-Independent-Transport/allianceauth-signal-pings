@@ -39,7 +39,7 @@ def new_req(sender, instance, created, **kwargs):
                 embed = {'title': "New Group Request", 
                     'description': ("From **{}** to join **{}**".format(main_char.character_name,group)),
                     'color': BLUE,
-                    'url': url
+                    'url': url,
                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.alliance_ticker, main_char.corporation_ticker)
