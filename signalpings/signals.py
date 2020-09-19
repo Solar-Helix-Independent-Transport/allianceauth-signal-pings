@@ -43,7 +43,8 @@ def new_req(sender, instance, created, **kwargs):
                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.alliance_ticker, main_char.corporation_ticker)
-                    }
+                            }
+                        }
             else:
                 embed = {'title': "New Group Leave Request", 
                     'color': RED,
