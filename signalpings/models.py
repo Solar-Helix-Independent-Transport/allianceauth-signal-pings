@@ -80,3 +80,28 @@ class HRAppSignal(models.Model):
         verbose_name = 'HR Application Signal'
         verbose_name_plural = 'HR Application Signals'
 
+class CharacterSignal(models.Model):
+    """A character ownership is added/removed on Auth"""
+
+    add_notify = models.BooleanField(default=True)
+    remove_notify = models.BooleanField(default=True)
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'Send Characters to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'Character Signal'
+        verbose_name_plural = 'Character Signals'
+
+class StateSignal(models.Model):
+    """A characters State Changed on Auth"""
+
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'Send States to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'State Change Signal'
+        verbose_name_plural = 'State Signals'
