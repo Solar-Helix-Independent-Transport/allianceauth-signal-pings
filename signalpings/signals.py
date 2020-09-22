@@ -79,7 +79,7 @@ def new_character(sender, instance, created, **kwargs):
                 }
 
             hooks = CharacterSignal.objects.all().select_related('webhook')
-            
+
             for hook in hooks:
                 if hook.webhook.enabled:
                     if hook.add_notify:
@@ -203,7 +203,7 @@ if timers_active():
 
     @receiver(pre_delete, sender=Timer)
     def timer_deleted(sender, instance, **kwargs):
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             corp_timer = instance.corp_timer
 
@@ -257,7 +257,7 @@ if timers_active():
 if fleets_active():
     @receiver(post_save, sender=OpTimer)
     def fleet_saved(sender, instance, created, **kwargs):
-        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
@@ -318,7 +318,7 @@ if fleets_active():
 
     @receiver(pre_delete, sender=OpTimer)
     def fleet_deleted(sender, instance, **kwargs):
-        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
@@ -369,7 +369,7 @@ if fleets_active():
 if hr_active():
     @receiver(post_save, sender=Application)
     def application_saved(sender, instance, created, **kwargs):
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             url = get_site_url() + "/hr/"
             main_char = instance.user.profile.main_character
