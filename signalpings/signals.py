@@ -31,8 +31,8 @@ if timers_active():
 @receiver(post_save, sender=GroupRequest)
 def new_req(sender, instance, created, **kwargs):
     if created:
-        logger.debug("New Group Request Signal for %s" % instance.user.profile.main_character)
         try:
+            logger.debug("New Group Request Signal for %s" % instance.user.profile.main_character)
             url = get_site_url() + "/group/management/"
             main_char = instance.user.profile.main_character
             group = instance.group.name
@@ -65,8 +65,8 @@ def new_req(sender, instance, created, **kwargs):
 @receiver(post_save, sender=CharacterOwnership)
 def new_character(sender, instance, created, **kwargs):
     if created:
-        logger.debug("New Character Ownership Signal (gained) for %s" % instance.character)
         try:
+            logger.debug("New Character Ownership Signal (gained) for %s" % instance.character)
             url = get_site_url()
             character = instance.character
             main_char = instance.user.profile.main_character
@@ -91,8 +91,8 @@ def new_character(sender, instance, created, **kwargs):
 
 @receiver(pre_delete, sender=CharacterOwnership)
 def removed_character(sender, instance, **kwargs):
-    logger.debug("New Character Ownership signal (lost) for %s" % instance.character)
     try:
+        logger.debug("New Character Ownership signal (lost) for %s" % instance.character)
         url = get_site_url()
         character = instance.character
         main_char = instance.user.profile.main_character
@@ -117,8 +117,8 @@ def removed_character(sender, instance, **kwargs):
 
 @receiver(post_save, sender=UserProfile)
 def state_change(sender, instance, raw, using, update_fields, **kwargs):
-    logger.debug("New State change signal for %s" % instance)
     try:
+        logger.debug("New State change signal for %s" % instance)
         url = get_site_url()
         username = instance
         state_new = instance.user.profile.state
@@ -145,8 +145,8 @@ def state_change(sender, instance, raw, using, update_fields, **kwargs):
 if timers_active():
     @receiver(post_save, sender=Timer)
     def timer_saved(sender, instance, created, **kwargs):
-        logger.debug("New Timerboard signal for %s" % instance )
         try:
+            logger.debug("New Timerboard signal for %s" % instance )
             corp_timer = instance.corp_timer
             if corp_timer:
                 corp = instance.user.profile.main_character.corporation
@@ -203,10 +203,8 @@ if timers_active():
 
     @receiver(pre_delete, sender=Timer)
     def timer_deleted(sender, instance, **kwargs):
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
-            corp_timer = instance.corp_timer
-
+            logger.debug("New timer removal for %s" % instance.structure)
             corp_timer = instance.corp_timer
             if corp_timer:
                 corp = instance.user.profile.main_character.corporation
@@ -257,8 +255,8 @@ if timers_active():
 if fleets_active():
     @receiver(post_save, sender=OpTimer)
     def fleet_saved(sender, instance, created, **kwargs):
-        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
+            logger.debug("New signal fleet created for %s" % instance.operation_name)
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
             system = instance.system
@@ -318,8 +316,8 @@ if fleets_active():
 
     @receiver(pre_delete, sender=OpTimer)
     def fleet_deleted(sender, instance, **kwargs):
-        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
+            logger.debug("New signal fleet deleted for %s" % instance.operation_name)
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
             system = instance.system
@@ -369,8 +367,8 @@ if fleets_active():
 if hr_active():
     @receiver(post_save, sender=Application)
     def application_saved(sender, instance, created, **kwargs):
-        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
+            logger.debug("New signal for %s" % instance.user.profile.main_character)
             url = get_site_url() + "/hr/"
             main_char = instance.user.profile.main_character
             corp = instance.form.corp
