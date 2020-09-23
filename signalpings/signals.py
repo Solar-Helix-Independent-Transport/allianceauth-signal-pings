@@ -1,8 +1,9 @@
 from django.dispatch import receiver
 
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, pre_save
 from allianceauth.groupmanagement.models import GroupRequest
-from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal
+from allianceauth.authentication.models import UserProfile, CharacterOwnership
+from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal
 import requests
 import json
 import datetime
@@ -10,8 +11,9 @@ from django.utils import timezone
 
 from .app_settings import get_site_url, hr_active, timers_active, fleets_active
 from .helpers import time_helpers
-import logging
-logger = logging.getLogger(__name__)
+
+from allianceauth.services.hooks import get_extension_logger
+logger = get_extension_logger(__name__)
 
 RED = 16711710
 BLUE = 42751
@@ -29,7 +31,7 @@ if timers_active():
 @receiver(post_save, sender=GroupRequest)
 def new_req(sender, instance, created, **kwargs):
     if created:
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New Group Request Signal for %s" % instance.user.profile.main_character)
         try:
             url = get_site_url() + "/group/management/"
             main_char = instance.user.profile.main_character
@@ -60,10 +62,90 @@ def new_req(sender, instance, created, **kwargs):
             logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
+@receiver(post_save, sender=CharacterOwnership)
+def new_character(sender, instance, created, **kwargs):
+    if created:
+        logger.debug("New Character Ownership Signal (gained) for %s" % instance.character)
+        try:
+            url = get_site_url()
+            character = instance.character
+            main_char = instance.user.profile.main_character
+
+            embed = {'title': "New Character Registered", 
+                'color': GREEN,
+                'description': ("**{}** Registered **{}**".format(main_char,character)),
+                'image': {'url': main_char.portrait_url_128 },
+                'url': url
+                }
+
+            hooks = CharacterSignal.objects.all().select_related('webhook')
+
+            for hook in hooks:
+                if hook.webhook.enabled:
+                    if hook.add_notify:
+                        hook.webhook.send_embed(embed)
+
+        except Exception as e:
+            logger.error(e)
+            pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
+
+@receiver(pre_delete, sender=CharacterOwnership)
+def removed_character(sender, instance, **kwargs):
+    logger.debug("New Character Ownership signal (lost) for %s" % instance.character)
+    try:
+        url = get_site_url()
+        character = instance.character
+        main_char = instance.user.profile.main_character
+
+        embed = {'title': "Character Ownership Lost", 
+            'color': RED,
+            'description': ("**{}** lost ownership of **{}**".format(main_char,character)),
+            'image': {'url': main_char.portrait_url_128 },
+            'url': url
+            }
+
+        hooks = CharacterSignal.objects.all().select_related('webhook')
+
+        for hook in hooks:
+            if hook.webhook.enabled:
+                if hook.remove_notify:
+                    hook.webhook.send_embed(embed)
+
+    except Exception as e:
+        logger.error(e)
+        pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
+
+@receiver(post_save, sender=UserProfile)
+def state_change(sender, instance, raw, using, update_fields, **kwargs):
+    logger.debug("New State change signal for %s" % instance)
+    try:
+        url = get_site_url()
+        username = instance
+        state_new = instance.user.profile.state
+        main_char = instance.user.profile.main_character
+
+        embed = {'title': "State Change", 
+            'color': BLUE,
+            'description': ("User **{}** Changed State to **{}**".format(username,state_new)),
+            'image': {'url': main_char.portrait_url_128 },
+            'url': url
+            }
+
+        hooks = CharacterSignal.objects.all().select_related('webhook')
+
+        if 'state' in update_fields:
+            for hook in hooks:
+                if hook.webhook.enabled:
+                    hook.webhook.send_embed(embed)
+
+    except Exception as e:
+        logger.error(e)
+        pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
+
 if timers_active():
     @receiver(post_save, sender=Timer)
     def timer_saved(sender, instance, created, **kwargs):
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New Timerboard signal for %s" % instance )
         try:
             corp_timer = instance.corp_timer
             if corp_timer:
@@ -117,11 +199,11 @@ if timers_active():
 
         except Exception as e:
             logger.error(e)
-            pass  # shits fucked... Don't worry about it... dont stop th UI
+            pass  # shits fucked... Don't worry about it... don't stop th UI
 
     @receiver(pre_delete, sender=Timer)
     def timer_deleted(sender, instance, **kwargs):
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             corp_timer = instance.corp_timer
 
@@ -170,12 +252,12 @@ if timers_active():
 
         except Exception as e:
             logger.error(e)
-            pass  # shits fucked... Don't worry about it... dont stop th UI
+            pass  # shits fucked... Don't worry about it... don't stop th UI
 
 if fleets_active():
     @receiver(post_save, sender=OpTimer)
     def fleet_saved(sender, instance, created, **kwargs):
-        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
@@ -236,7 +318,7 @@ if fleets_active():
 
     @receiver(pre_delete, sender=OpTimer)
     def fleet_deleted(sender, instance, **kwargs):
-        #logger.debug("New signal for %s" % instance.eve_character, flush=True)
+        logger.debug("New signal for %s" % instance.eve_character, flush=True)
         try:
             url = get_site_url() + "/optimer/"
             main_char = instance.eve_character
@@ -287,7 +369,7 @@ if fleets_active():
 if hr_active():
     @receiver(post_save, sender=Application)
     def application_saved(sender, instance, created, **kwargs):
-        #logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
+        logger.debug("New signal for %s" % instance.user.profile.main_character, flush=True)
         try:
             url = get_site_url() + "/hr/"
             main_char = instance.user.profile.main_character
@@ -316,3 +398,4 @@ if hr_active():
         except Exception as e:
             logger.error(e)
             pass  # shits fucked... Don't worry about it...
+

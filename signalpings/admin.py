@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import WebHook, GroupSignal, TimerSignal, FleetSignal, HRAppSignal
+from .models import WebHook, GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal
 from .app_settings import fleets_active, timers_active, hr_active
 
 class WebHookAdmin(admin.ModelAdmin):
@@ -22,6 +22,24 @@ class GroupSignalAdmin(admin.ModelAdmin):
     get_webhook.admin_order_field = 'webhook__name'
 
 admin.site.register(GroupSignal, GroupSignalAdmin)
+
+class CharacterSignalAdmin(admin.ModelAdmin):
+    list_display=('get_webhook','add_notify','remove_notify')
+    def get_webhook(self, obj):
+        return obj.webhook.name
+    get_webhook.short_description = 'Webhook Name'
+    get_webhook.admin_order_field = 'webhook__name'
+
+admin.site.register(CharacterSignal, CharacterSignalAdmin)
+
+class StateSignalAdmin(admin.ModelAdmin):
+    list_display=('get_webhook',)
+    def get_webhook(self, obj):
+        return obj.webhook.name
+    get_webhook.short_description = 'Webhook Name'
+    get_webhook.admin_order_field = 'webhook__name'
+
+admin.site.register(StateSignal, StateSignalAdmin)
 
 if timers_active():
     class TimerSignalAdmin(admin.ModelAdmin):
