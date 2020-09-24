@@ -105,3 +105,23 @@ class StateSignal(models.Model):
     class Meta:
         verbose_name = 'State Change Signal'
         verbose_name_plural = 'State Signals'
+
+class SRPSignal(models.Model):
+    """An SRP Request is Created/Updated"""
+
+    SRP_STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    )
+
+    webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
+    notify_type = models.CharField(max_length=8, default="Pending", choices=SRP_STATUS_CHOICES)
+    mention_requestor = models.BooleanField(default=True)
+
+    def __str__(self):
+        return 'Send SRP to "{}"'.format(self.webhook.name)
+
+    class Meta:
+        verbose_name = 'SRP Signal'
+        verbose_name_plural = 'SRP Signals'

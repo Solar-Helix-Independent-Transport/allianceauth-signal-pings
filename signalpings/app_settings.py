@@ -19,3 +19,6 @@ def timers_active():
 
 def hr_active():
     return 'allianceauth.hrapplications' in settings.INSTALLED_APPS
+
+def srp_active():
+    return 'allianceauth.srp' in settings.INSTALLED_APPS
