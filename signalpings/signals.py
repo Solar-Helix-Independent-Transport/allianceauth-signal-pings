@@ -418,70 +418,71 @@ if srp_active():
 
             for hook in hooks:
                 if hook.webhook.enabled:
+                    if hook.notify_type == srp_status:
 
-                    ## Format the discord @ string to ping or not
-                    if hook.mention_requestor:
-                        mention_string = "<@!%s>" % character.character_id  ##Temporary, no instance.User field currently in SRP
-                    else:
-                        mention_string = "{}".format(character)
+                        ## Format the discord @ string to ping or not
+                        if hook.mention_requestor:
+                            mention_string = "<@!%s>" % character.character_id  ##Temporary, no instance.User field currently in SRP
+                        else:
+                            mention_string = "{}".format(character)
 
-                    ## Setup Embed prettyness based on type
-                    if srp_status == 'Pending':
-                        message = "New SRP Request"
-                        message_description = "**{}** Requested SRP for a **{}**".format(character,srp_ship_name)
-                        message_color = BLUE
-                    elif srp_status == 'Approved':
-                        message = "SRP Request Approved"
-                        message_description = "**{}**'s Request to SRP a **{}** was Approved".format(character,srp_ship_name)
-                        message_color = GREEN
-                    elif srp_status == 'Rejected':
-                        message = "SRP Request Rejected"
-                        message_description = "**{}**'s Request to SRP a **{}** was Rejected".format(character,srp_ship_name)
-                        message_color = RED
-                    else: ## Hey we better catch any weirdness here
-                        message = 'SRP Signal Error'
-                        message_description = "Error"
-                        message_color = RED
+                        ## Setup Embed prettyness based on type
+                        if srp_status == 'Pending':
+                            message = "New SRP Request"
+                            message_description = "**{}** Requested SRP for a **{}**".format(character,srp_ship_name)
+                            message_color = BLUE
+                        elif srp_status == 'Approved':
+                            message = "SRP Request Approved"
+                            message_description = "**{}**'s Request to SRP a **{}** was Approved".format(character,srp_ship_name)
+                            message_color = GREEN
+                        elif srp_status == 'Rejected':
+                            message = "SRP Request Rejected"
+                            message_description = "**{}**'s Request to SRP a **{}** was Rejected".format(character,srp_ship_name)
+                            message_color = RED
+                        else: ## Hey we better catch any weirdness here
+                            message = 'SRP Signal Error'
+                            message_description = "Error"
+                            message_color = RED
 
-                    ## Cook up a lil ol' payload from above settings
-                    embed = {'title': message, 
-                            'description': (message_description),
-                            'url': url,
-                            'color': message_color,
-                            "fields": [
-                                {
-                                "name": "Requestor",
-                                "value": mention_string,
-                                "inline": True
-                                },
-                                {
-                                "name": "Status",
-                                "value": srp_status,
-                                "inline": True
-                                },
-                                {
-                                "name": "zKill",
-                                "value": zkill_string,
-                                "inline": True
-                                },
-                                {
-                                "name": "Value",
-                                "value": value_string,
-                                "inline": False
-                                },
-                                {
-                                "name": "Additional Info",
-                                "value": additional_info,
-                                "inline": False
+                        ## Cook up a lil ol' payload from above settings
+                        embed = {'title': message, 
+                                'description': (message_description),
+                                'url': url,
+                                'color': message_color,
+                                "fields": [
+                                    {
+                                    "name": "Requestor",
+                                    "value": mention_string,
+                                    "inline": True
+                                    },
+                                    {
+                                    "name": "Status",
+                                    "value": srp_status,
+                                    "inline": True
+                                    },
+                                    {
+                                    "name": "zKill",
+                                    "value": zkill_string,
+                                    "inline": True
+                                    },
+                                    {
+                                    "name": "Value",
+                                    "value": value_string,
+                                    "inline": False
+                                    },
+                                    {
+                                    "name": "Additional Info",
+                                    "value": additional_info,
+                                    "inline": False
+                                    }
+                                ],
+                                "footer": {
+                                    "icon_url": character_icon, ##evelinks needs a typeID for ship icon, Need to work this one out.
+                                    "text": "{} - {}".format(character, srp_ship_name)
                                 }
-                            ],
-                            "footer": {
-                                "icon_url": character_icon, ##evelinks needs a typeID for ship icon, Need to work this one out.
-                                "text": "{} - {}".format(character, srp_ship_name)
                             }
-                        }
 
-                    hook.webhook.send_embed(embed)
+                        hook.webhook.send_embed(embed)
 
         except Exception as e:
             logger.error(e)
