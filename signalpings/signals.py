@@ -2,7 +2,7 @@ from django.dispatch import receiver
 
 from django.db.models.signals import post_save, pre_delete, pre_save
 from allianceauth.groupmanagement.models import GroupRequest
-from allianceauth.authentication.models import UserProfile, CharacterOwnership
+from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
 from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
 import requests
@@ -414,30 +414,35 @@ if srp_active():
             value_string = "{} Isk".format(instance.srp_total_amount)
             additional_info = instance.additional_info
             hooks = SRPSignal.objects.all().select_related('webhook')
-            character_icon = character_portrait_url(character.character_id, 64)
+            character_icon = character.portrait_url_64
+
+            ## Take our SRP character and resolve it to a proper model, then work our way to discord
+            char = EveCharacter.objects.get(character_name=character)
+            discord_id = char.character_ownership.user.discord.uid
+            main = char.character_ownership.user.profile.main_character
 
             for hook in hooks:
                 if hook.webhook.enabled:
                     if hook.notify_type == srp_status:
 
-                        ## Format the discord @ string to ping or not
+                        ## Format the Requestor field to be a Discord @Mention or if False, a users Main.
                         if hook.mention_requestor:
-                            mention_string = "<@!%s>" % character.character_id  ##Temporary, no instance.User field currently in SRP
+                            mention_string = "<@!%s>" % discord_id
                         else:
-                            mention_string = "{}".format(character)
+                            mention_string = "{}".format(main)
 
                         ## Setup Embed prettyness based on type
                         if srp_status == 'Pending':
                             message = "New SRP Request"
-                            message_description = "**{}** Requested SRP for a **{}**".format(character,srp_ship_name)
+                            message_description = "**{}** Requested SRP for a **{}**".format(main,srp_ship_name)
                             message_color = BLUE
                         elif srp_status == 'Approved':
                             message = "SRP Request Approved"
-                            message_description = "**{}**'s Request to SRP a **{}** was Approved".format(character,srp_ship_name)
+                            message_description = "**{}**'s Request to SRP a **{}** was Approved".format(main,srp_ship_name)
                             message_color = GREEN
                         elif srp_status == 'Rejected':
                             message = "SRP Request Rejected"
-                            message_description = "**{}**'s Request to SRP a **{}** was Rejected".format(character,srp_ship_name)
+                            message_description = "**{}**'s Request to SRP a **{}** was Rejected".format(main,srp_ship_name)
                             message_color = RED
                         else: ## Hey we better catch any weirdness here
                             message = 'SRP Signal Error'
