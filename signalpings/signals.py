@@ -5,6 +5,7 @@ from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
 from allianceauth.eveonline.evelinks.dotlan import solar_system_url
+from allianceauth.eveonline.evelinks.evewho import character_url, corporation_url
 from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
 import requests
 import json
@@ -22,7 +23,7 @@ BLUE = 42751
 GREEN = 6684416
 
 if hr_active():
-    from allianceauth.hrapplications.models import Application
+    from allianceauth.hrapplications.models import Application, ApplicationComment, ApplicationResponse
 
 if fleets_active():
     from allianceauth.optimer.models import OpTimer
@@ -370,38 +371,98 @@ if fleets_active():
             logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
+
 if hr_active():
     @receiver(post_save, sender=Application)
-    def application_saved(sender, instance, created, **kwargs):
+    def application_saved(sender, instance, created, update_fields, **kwargs):
         try:
             logger.debug("New signal for %s" % instance.user.profile.main_character)
             url = get_site_url() + "/hr/"
-            main_char = instance.user.profile.main_character
-            corp = instance.form.corp
-            message = "New Corp Application"
+            main_char = "[" + instance.user.profile.main_character + "](" + character_url(instance.user.profile.main_character) + ")"
+            corp = "[" + instance.form.corp + "](" + corporation_url(instance.form.corp) + ")"
+            sending = False
 
-            embed = {'title': message, 
-                    'description': ("**{}** Applied to **{}**".format(main_char,corp)),
+            if created:
+                message = "New Corp Application"
+                message_colour = GREEN
+                message_description = ("**{}** Has applied to **{}**".format(main_char,corp))
+                sending = True
+            elif instance.approved:
+                message = "Corp Application Approved"
+                message_colour = BLUE
+                application_approver = "[" + instance.reviewer.profile.main_character + "](" + character_url(instance.reviewer.profile.main_character) + ")"
+                message_description = ("**{}** Application to **{}** Approved by **{}**".format(main_char, corp, application_approver))
+                sending = True
+
+            if sending == True:
+                hooks = HRAppSignal.objects.all().select_related('webhook')
+
+                embed = {'title': message, 
+                    'description': message_description,
                     'url': url,
-                    'color': GREEN,
+                    'color': message_colour,
                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
                     }
                 }
 
-            hooks = HRAppSignal.objects.all().select_related('webhook')
-
-            for hook in hooks:
-                if hook.webhook.enabled:
-                    if hook.corporation is None:
-                        hook.webhook.send_embed(embed)
-                    elif hook.corporation == corp:
-                        hook.webhook.send_embed(embed)
+                for hook in hooks:
+                    if hook.webhook.enabled:
+                        if hook.corporation is None:
+                            hook.webhook.send_embed(embed)
+                        elif hook.corporation == corp:
+                            hook.webhook.send_embed(embed)
 
         except Exception as e:
             logger.error(e)
             pass  # shits fucked... Don't worry about it...
+
+if hr_active():
+    @receiver(post_save, sender=ApplicationComment)
+    def comment_saved(sender, instance, created, update_fields, **kwargs):
+        try:
+            logger.debug("New HRApp Application Comment signal for %s" % instance.user.profile.main_character)
+            url = get_site_url() + "/hr/"
+            comment_main_char = "[" + instance.user.profile.main_character + "](" + character_url(instance.user.profile.main_character) + ")"
+            application_main_char = "[" + instance.application.user.profile.main_character + "](" + character_url(instance.application.profile.main_character) + ")"
+
+            corp = "[" + instance.form.corp + "](" + corporation_url(instance.form.corp) + ")"
+
+            message = "New HRApp Comment"
+            message_colour = BLUE
+            message_description = ("**{}** Commented on **{}**'s Application to **{}**".format(comment_main_char,application_main_char,corp))
+
+            embed = {'title': message, 
+                    'description': message_description,
+                    'url': url,
+                    'color': message_colour,
+                    "fields": [
+                        {
+                        "name": comment_main_char,
+                        "value": instance.text,
+                        },
+                    ],
+                    "footer": {
+                        "icon_url": application_main_char.portrait_url_64,
+                        "text": "{}  [{}]".format(application_main_char.character_name, application_main_char.corporation_ticker)
+                    }
+                }
+            
+            hooks = HRAppSignal.objects.all().select_related('webhook')
+
+            for hook in hooks:
+                if hook.notify_comments:
+                    if hook.webhook.enabled:
+                        if hook.corporation is None:
+                            hook.webhook.send_embed(embed)
+                        elif hook.corporation == corp:
+                            hook.webhook.send_embed(embed)
+
+        except Exception as e:
+            logger.error(e)
+            pass  # shits fucked... Don't worry about it...
+
 
 if srp_active():
     @receiver(post_save, sender=SrpUserRequest)

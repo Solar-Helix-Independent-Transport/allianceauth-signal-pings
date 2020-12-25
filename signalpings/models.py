@@ -67,11 +67,14 @@ class TimerSignal(models.Model):
         verbose_name = 'Timer Board Signal'
         verbose_name_plural = 'Timer Board Signals'
 
+
 class HRAppSignal(models.Model):
     """Timer Board Create/Delete pings"""
 
     webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
-    corporation = models.ForeignKey(EveCorporationInfo, on_delete=models.CASCADE, blank=True, null=True, default=None)    
+    corporation = models.ForeignKey(EveCorporationInfo, on_delete=models.CASCADE, blank=True, null=True, default=None)  
+
+    notify_comments = models.BooleanField(default=True)
 
     def __str__(self):
         return 'Send HR to "{}"'.format(self.webhook.name)
@@ -79,6 +82,7 @@ class HRAppSignal(models.Model):
     class Meta:
         verbose_name = 'HR Application Signal'
         verbose_name_plural = 'HR Application Signals'
+
 
 class CharacterSignal(models.Model):
     """A character ownership is added/removed on Auth"""
