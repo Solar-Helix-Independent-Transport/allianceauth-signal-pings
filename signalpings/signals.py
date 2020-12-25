@@ -4,6 +4,7 @@ from django.db.models.signals import post_save, pre_delete, pre_save
 from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
+from allianceauth.eveonline.evelinks.dotlan import solar_system_url
 from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
 import requests
 import json
@@ -146,6 +147,7 @@ def state_change(sender, instance, raw, using, update_fields, **kwargs):
         logger.error(e)
         pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
 
+
 if timers_active():
     @receiver(post_save, sender=Timer)
     def timer_saved(sender, instance, created, **kwargs):
@@ -156,7 +158,7 @@ if timers_active():
                 corp = instance.user.profile.main_character.corporation
             url = get_site_url() + "/timers/"
             main_char = instance.user.profile.main_character
-            system = instance.system
+            system = "[" + instance.system + "](" + solar_system_url(instance.system) + ")"
             structure = instance.structure
             eve_time = instance.eve_time
             details = instance.details
