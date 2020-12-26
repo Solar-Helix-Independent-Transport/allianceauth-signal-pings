@@ -1,14 +1,11 @@
 from django.dispatch import receiver
 
-from django.db.models.signals import post_save, pre_delete, pre_save
+from django.db.models.signals import post_save, pre_delete
 from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
-from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
 from allianceauth.eveonline.evelinks.dotlan import solar_system_url
 from allianceauth.eveonline.evelinks.evewho import character_url, corporation_url
-from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
-import requests
-import json
+from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, SRPSignal
 import datetime
 from django.utils import timezone
 
@@ -23,7 +20,7 @@ BLUE = 42751
 GREEN = 6684416
 
 if hr_active():
-    from allianceauth.hrapplications.models import Application, ApplicationComment, ApplicationResponse
+    from allianceauth.hrapplications.models import Application, ApplicationComment
 
 if fleets_active():
     from allianceauth.optimer.models import OpTimer
@@ -33,6 +30,7 @@ if timers_active():
 
 if srp_active():
     from allianceauth.srp.models import SrpUserRequest
+
 
 @receiver(post_save, sender=GroupRequest)
 def new_req(sender, instance, created, **kwargs):
@@ -44,19 +42,19 @@ def new_req(sender, instance, created, **kwargs):
             group = instance.group.name
 
             if not instance.leave_request:
-                embed = {'title': "New Group Request", 
-                    'description': ("From **{}** to join **{}**".format(main_char.character_name,group)),
-                    'color': BLUE,
-                    'image': {'url': main_char.portrait_url_128 },
-                    'url': url
-                    }
+                embed = {'title': "New Group Request",
+                         'description': ("From **{}** to join **{}**".format(main_char.character_name, group)),
+                         'color': BLUE,
+                         'image': {'url': main_char.portrait_url_128},
+                         'url': url
+                         }
             else:
-                embed = {'title': "New Group Leave Request", 
-                    'color': RED,
-                    'description': ("From **{}** to leave **{}**".format(main_char.character_name,group)),
-                    'image': {'url': main_char.portrait_url_128 },
-                    'url': url
-                    }
+                embed = {'title': "New Group Leave Request",
+                         'color': RED,
+                         'description': ("From **{}** to leave **{}**".format(main_char.character_name, group)),
+                         'image': {'url': main_char.portrait_url_128},
+                         'url': url
+                         }
 
             hooks = GroupSignal.objects.filter(group=instance.group).select_related('webhook')
 
@@ -68,6 +66,7 @@ def new_req(sender, instance, created, **kwargs):
             logger.error(e)
             pass  # shits fucked... Don't worry about it...
 
+
 @receiver(post_save, sender=CharacterOwnership)
 def new_character(sender, instance, created, **kwargs):
     if created:
@@ -78,11 +77,11 @@ def new_character(sender, instance, created, **kwargs):
             main_char = instance.user.profile.main_character
 
             embed = {'title': "New Character Registered", 
-                'color': GREEN,
-                'description': ("**{}** Registered **{}**".format(main_char,character)),
-                'image': {'url': main_char.portrait_url_128 },
-                'url': url
-                }
+                     'color': GREEN,
+                     'description': ("**{}** Registered **{}**".format(main_char, character)),
+                     'image': {'url': main_char.portrait_url_128},
+                     'url': url
+                     }
 
             hooks = CharacterSignal.objects.all().select_related('webhook')
 
@@ -95,6 +94,7 @@ def new_character(sender, instance, created, **kwargs):
             logger.error(e)
             pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
 
+
 @receiver(pre_delete, sender=CharacterOwnership)
 def removed_character(sender, instance, **kwargs):
     try:
@@ -104,11 +104,11 @@ def removed_character(sender, instance, **kwargs):
         main_char = instance.user.profile.main_character
 
         embed = {'title': "Character Ownership Lost", 
-            'color': RED,
-            'description': ("**{}** lost ownership of **{}**".format(main_char,character)),
-            'image': {'url': main_char.portrait_url_128 },
-            'url': url
-            }
+                 'color': RED,
+                 'description': ("**{}** lost ownership of **{}**".format(main_char, character)),
+                 'image': {'url': main_char.portrait_url_128},
+                 'url': url
+                 }
 
         hooks = CharacterSignal.objects.all().select_related('webhook')
 
@@ -121,6 +121,7 @@ def removed_character(sender, instance, **kwargs):
         logger.error(e)
         pass  # shits fucked... Don't worry about it...  Steve Irwin didn't stop and neither will I
 
+
 @receiver(post_save, sender=UserProfile)
 def state_change(sender, instance, raw, using, update_fields, **kwargs):
     try:
@@ -131,11 +132,11 @@ def state_change(sender, instance, raw, using, update_fields, **kwargs):
         main_char = instance.user.profile.main_character
 
         embed = {'title': "State Change", 
-            'color': BLUE,
-            'description': ("User **{}** Changed State to **{}**".format(username,state_new)),
-            'image': {'url': main_char.portrait_url_128 },
-            'url': url
-            }
+                 'color': BLUE,
+                 'description': ("User **{}** Changed State to **{}**".format(username, state_new)),
+                 'image': {'url': main_char.portrait_url_128},
+                 'url': url
+                 }
 
         hooks = CharacterSignal.objects.all().select_related('webhook')
 
@@ -153,7 +154,7 @@ if timers_active():
     @receiver(post_save, sender=Timer)
     def timer_saved(sender, instance, created, **kwargs):
         try:
-            logger.debug("New Timerboard signal for %s" % instance )
+            logger.debug("New Timerboard signal for %s" % instance)
             corp_timer = instance.corp_timer
             if corp_timer:
                 corp = instance.user.profile.main_character.corporation
@@ -172,25 +173,25 @@ if timers_active():
             if corp_timer:
                 restricted = "Restricted to {}".format(corp)
             embed = {'title': message, 
-                    'description': ("**{}** in **{}**\n\n{}\n{}".format(structure,system,details,restricted)),
-                    'url': url,
-                    'color': col,
-                    "fields": [
+                     'description': ("**{}** in **{}**\n\n{}\n{}".format(structure, system, details, restricted)),
+                     'url': url,
+                     'color': col,
+                     "fields": [
                         {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                         "name": "Eve Time",
+                         "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
                         },
                         {
-                        "name": "Time Until",
-                        "value": time_helpers.get_time_until(eve_time)
+                         "name": "Time Until",
+                         "value": time_helpers.get_time_until(eve_time)
                         }
 
-                    ],
-                    "footer": {
+                     ],
+                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
-                    }
-                }
+                     }
+                     }
 
             hooks = TimerSignal.objects.all().select_related('webhook')
             old = datetime.datetime.now(timezone.utc) > eve_time
@@ -226,22 +227,21 @@ if timers_active():
             if corp_timer:
                 restricted = "Restricted to {}".format(corp)
 
-
             embed = {'title': message, 
-                    'description': ("**{}** in **{}** has been removed\n\n{}\n{}".format(structure,system,details,restricted)),
-                    'url': url,
-                    'color': RED,
-                    "fields": [
+                     'description': ("**{}** in **{}** has been removed\n\n{}\n{}".format(structure, system, details, restricted)),
+                     'url': url,
+                     'color': RED,
+                     "fields": [
                         {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                         "name": "Eve Time",
+                         "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
                         },
-                    ],
-                    "footer": {
+                     ],
+                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
-                    }
-                }
+                     }
+                     }
 
             hooks = TimerSignal.objects.all().select_related('webhook')
             old = datetime.datetime.now(timezone.utc) > eve_time
@@ -277,37 +277,36 @@ if fleets_active():
                 message = "Fleet Timer Updated"
                 col = BLUE
 
-
             embed = {'title': message, 
-                    'description': ("**{}** from **{}**".format(operation_name,system)),
-                    'url': url,
-                    'color': col,
-                    "fields": [
+                     'description': ("**{}** from **{}**".format(operation_name, system)),
+                     'url': url,
+                     'color': col,
+                     "fields": [
                         {
-                        "name": "FC",
-                        "value": fc,
-                        "inline": True
+                         "name": "FC",
+                         "value": fc,
+                         "inline": True
                         },
                         {
-                        "name": "Doctrine",
-                        "value": doctrine,
-                        "inline": True
+                         "name": "Doctrine",
+                         "value": doctrine,
+                         "inline": True
                         },
                         {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                         "name": "Eve Time",
+                         "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
                         },
                         {
-                        "name": "Time Until",
-                        "value": time_helpers.get_time_until(eve_time)
+                         "name": "Time Until",
+                         "value": time_helpers.get_time_until(eve_time)
                         }
 
-                    ],
-                    "footer": {
+                     ],
+                     "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
-                    }
-                }
+                     }
+                     }
 
             hooks = FleetSignal.objects.all().select_related('webhook')
             old = datetime.datetime.now(timezone.utc) > eve_time
@@ -337,26 +336,25 @@ if fleets_active():
             message = "Fleet Removed"
 
             embed = {'title': message, 
-                    'description': ("**{}** from **{}** has been cancelled".format(operation_name,system)),
-                    'url': url,
-                    'color': RED,
-                    "fields": [
+                     'description': ("**{}** from **{}** has been cancelled".format(operation_name,system)),
+                     'url': url,
+                     'color': RED,
+                     "fields": [
                         {
-                        "name": "FC",
-                        "value": fc,
-                        "inline": True
+                         "name": "FC",
+                         "value": fc,
+                         "inline": True
                         },
                         {
-                        "name": "Eve Time",
-                        "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
+                         "name": "Eve Time",
+                         "value": eve_time.strftime("%Y-%m-%d %H:%M:%S")
                         }
-
-                    ],
-                    "footer": {
+                        ],
+                      "footer": {
                         "icon_url": main_char.portrait_url_64,
                         "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
-                    }
-                }
+                        }
+                        }
 
             hooks = FleetSignal.objects.all().select_related('webhook')
             old = datetime.datetime.now(timezone.utc) > eve_time
@@ -374,14 +372,13 @@ if fleets_active():
 
 if hr_active():
     @receiver(post_save, sender=Application)
-    def application_saved(sender, instance, created, update_fields, **kwargs):
+    def application_saved(sender, instance, created, **kwargs):
         try:
-            logger.debug("New signal for %s" % instance.user.profile.main_character)
+            logger.debug("New HRApp Signal for %s" % instance.user.profile.main_character.character_name)
             url = get_site_url() + "/hr/"
-            main_char = "[" + instance.user.profile.main_character + "](" + character_url(instance.user.profile.main_character) + ")"
-            corp = "[" + instance.form.corp + "](" + corporation_url(instance.form.corp) + ")"
+            main_char = "[" + instance.user.profile.main_character.character_name + "](" + character_url(instance.user.profile.main_character.character_id) + ")"
+            corp = "[" + instance.form.corp.corporation_name + "](" + corporation_url(instance.form.corp.corporation_id) + ")"
             sending = False
-
             if created:
                 message = "New Corp Application"
                 message_colour = GREEN
@@ -390,20 +387,21 @@ if hr_active():
             elif instance.approved:
                 message = "Corp Application Approved"
                 message_colour = BLUE
-                application_approver = "[" + instance.reviewer.profile.main_character + "](" + character_url(instance.reviewer.profile.main_character) + ")"
+                application_approver = "[" + instance.reviewer.profile.main_character.character_name + "](" + character_url(instance.reviewer.profile.main_character.character_id) + ")"
                 message_description = ("**{}** Application to **{}** Approved by **{}**".format(main_char, corp, application_approver))
                 sending = True
 
+            hooks = HRAppSignal.objects.all().select_related('webhook')
+            
             if sending == True:
-                hooks = HRAppSignal.objects.all().select_related('webhook')
 
                 embed = {'title': message, 
                     'description': message_description,
                     'url': url,
                     'color': message_colour,
                     "footer": {
-                        "icon_url": main_char.portrait_url_64,
-                        "text": "{}  [{}]".format(main_char.character_name, main_char.corporation_ticker)
+                        "icon_url": instance.user.profile.main_character.portrait_url_64,
+                        "text": "{}  [{}]".format(instance.user.profile.character_name, instance.user.profile.corporation_ticker)
                     }
                 }
 
@@ -411,7 +409,7 @@ if hr_active():
                     if hook.webhook.enabled:
                         if hook.corporation is None:
                             hook.webhook.send_embed(embed)
-                        elif hook.corporation == corp:
+                        elif hook.corporation == instance.form.corp:
                             hook.webhook.send_embed(embed)
 
         except Exception as e:
@@ -422,12 +420,12 @@ if hr_active():
     @receiver(post_save, sender=ApplicationComment)
     def comment_saved(sender, instance, created, update_fields, **kwargs):
         try:
-            logger.debug("New HRApp Application Comment signal for %s" % instance.user.profile.main_character)
+            logger.debug("New HRApp Application Comment signal for %s" % instance.user.profile.main_character.character_name)
             url = get_site_url() + "/hr/"
-            comment_main_char = "[" + instance.user.profile.main_character + "](" + character_url(instance.user.profile.main_character) + ")"
-            application_main_char = "[" + instance.application.user.profile.main_character + "](" + character_url(instance.application.profile.main_character) + ")"
+            comment_main_char = "[" + instance.user.profile.main_character.character_name + "](" + character_url(instance.user.profile.main_character.character_id) + ")"
+            application_main_char = "[" + instance.application.user.profile.main_character.character_name + "](" + character_url(instance.application.user.profile.main_character.character_id) + ")"
 
-            corp = "[" + instance.form.corp + "](" + corporation_url(instance.form.corp) + ")"
+            corp = "[" + instance.application.form.corp.corporation_name + "](" + corporation_url(instance.application.form.corp.corporation_id) + ")"
 
             message = "New HRApp Comment"
             message_colour = BLUE
@@ -439,13 +437,13 @@ if hr_active():
                     'color': message_colour,
                     "fields": [
                         {
-                        "name": comment_main_char,
+                        "name": instance.user.profile.main_character.character_name,
                         "value": instance.text,
                         },
                     ],
                     "footer": {
-                        "icon_url": application_main_char.portrait_url_64,
-                        "text": "{}  [{}]".format(application_main_char.character_name, application_main_char.corporation_ticker)
+                        "icon_url": instance.application.user.profile.main_character.portrait_url_64,
+                        "text": "{}  [{}]".format(instance.application.user.profile.main_character.character_name, instance.application.user.profile.main_character.corporation_ticker)
                     }
                 }
             
@@ -456,7 +454,7 @@ if hr_active():
                     if hook.webhook.enabled:
                         if hook.corporation is None:
                             hook.webhook.send_embed(embed)
-                        elif hook.corporation == corp:
+                        elif hook.corporation == instance.application.form.corp:
                             hook.webhook.send_embed(embed)
 
         except Exception as e:
