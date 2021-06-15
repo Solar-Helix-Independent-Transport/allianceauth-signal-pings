@@ -1,6 +1,7 @@
 from django.dispatch import receiver
 
 from django.db.models.signals import post_save, pre_delete, pre_save
+from django.urls import reverse
 from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
@@ -37,7 +38,7 @@ def new_req(sender, instance, created, **kwargs):
     if created:
         try:
             logger.debug("New Group Request Signal for %s" % instance.user.profile.main_character)
-            url = get_site_url() + "/group/management/"
+            url = get_site_url() + reverse("groupmanagement:management")
             main_char = instance.user.profile.main_character
             group = instance.group.name
 
@@ -154,7 +155,7 @@ if timers_active():
             corp_timer = instance.corp_timer
             if corp_timer:
                 corp = instance.user.profile.main_character.corporation
-            url = get_site_url() + "/timers/"
+            url = get_site_url() + reverse("timerboard:view")
             main_char = instance.user.profile.main_character
             system = instance.system
             structure = instance.structure
@@ -212,7 +213,7 @@ if timers_active():
             corp_timer = instance.corp_timer
             if corp_timer:
                 corp = instance.user.profile.main_character.corporation
-            url = get_site_url() + "/timers/"
+            url = get_site_url() + reverse("timerboard:view")
             main_char = instance.user.profile.main_character
             system = instance.system
             structure = instance.structure
@@ -261,7 +262,7 @@ if fleets_active():
     def fleet_saved(sender, instance, created, **kwargs):
         try:
             logger.debug("New signal fleet created for %s" % instance.operation_name)
-            url = get_site_url() + "/optimer/"
+            url = get_site_url() + reverse("optimer:view")
             main_char = instance.eve_character
             system = instance.system
             operation_name = instance.operation_name
@@ -322,7 +323,7 @@ if fleets_active():
     def fleet_deleted(sender, instance, **kwargs):
         try:
             logger.debug("New signal fleet deleted for %s" % instance.operation_name)
-            url = get_site_url() + "/optimer/"
+            url = get_site_url() + reverse("optimer:view")
             main_char = instance.eve_character
             system = instance.system
             operation_name = instance.operation_name
@@ -373,7 +374,7 @@ if hr_active():
     def application_saved(sender, instance, created, **kwargs):
         try:
             logger.debug("New signal for %s" % instance.user.profile.main_character)
-            url = get_site_url() + "/hr/"
+            url = get_site_url() +  reverse("hrapplications:index")
             main_char = instance.user.profile.main_character
             corp = instance.form.corp
             message = "New Corp Application"
@@ -406,7 +407,7 @@ if srp_active():
     def application_saved(sender, instance, created, **kwargs):
         try:
             logger.debug("New SRP signal for %s" % instance.character) ##Cant pull userprofile, note in the model
-            url = get_site_url() + "/srp/"
+            url = get_site_url() + reverse("srp:management")
             character = instance.character
             srp_status = instance.srp_status
             zkill_string = "[Link]({})".format(instance.killboard_link)
