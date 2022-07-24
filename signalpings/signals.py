@@ -5,6 +5,7 @@ from django.urls import reverse
 from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import  type_icon_url, character_portrait_url
+from allianceauth.eveonline.evelinks.evewho import character_url, corporation_url
 from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
 import requests
 import json
@@ -75,11 +76,18 @@ def new_character(sender, instance, created, **kwargs):
             url = get_site_url()
             character = instance.character
             main_char = instance.user.profile.main_character
-
             embed = {'title': "New Character Registered", 
                 'color': GREEN,
-                'description': ("**{}** Registered **{}**".format(main_char,character)),
-                'image': {'url': main_char.portrait_url_128 },
+                'description': "[{}]({}) [ [{}]({}) ]\nRegistered\n[{}]({}) [ [{}]({}) ]".format(
+                                    main_char,
+                                    character_url(main_char.character_id),
+                                    main_char.corporation_name,
+                                    corporation_url(main_char.corporation_id),
+                                    character,
+                                    character_url(character.character_id),
+                                    character.corporation_name,
+                                    corporation_url(character.corporation_id)),
+                'image': {'url': character.portrait_url_128 },
                 'url': url
                 }
 
@@ -104,8 +112,16 @@ def removed_character(sender, instance, **kwargs):
 
         embed = {'title': "Character Ownership Lost", 
             'color': RED,
-            'description': ("**{}** lost ownership of **{}**".format(main_char,character)),
-            'image': {'url': main_char.portrait_url_128 },
+            'description': "[{}]({}) [ [{}]({}) ]\nLost Ownership of\n[{}]({}) [ [{}]({}) ]".format(
+                                main_char, 
+                                character_url(main_char.character_id),
+                                main_char.corporation_name,
+                                corporation_url(main_char.corporation_id),
+                                character,
+                                character_url(character.character_id),
+                                character.corporation_name,
+                                corporation_url(character.corporation_id)),
+            'image': {'url': character.portrait_url_128 },
             'url': url
             }
 
@@ -131,7 +147,11 @@ def state_change(sender, instance, raw, using, update_fields, **kwargs):
 
         embed = {'title': "State Change", 
             'color': BLUE,
-            'description': ("User **{}** Changed State to **{}**".format(username,state_new)),
+            'description': ("**{}** ([{}]({})) \nChanged State to **{}**".format(
+                username,
+                main_char,
+                character_url(main_char.character_id),
+                state_new)),
             'image': {'url': main_char.portrait_url_128 },
             'url': url
             }
