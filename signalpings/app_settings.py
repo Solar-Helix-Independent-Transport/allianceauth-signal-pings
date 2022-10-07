@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.apps import apps
 import re
 
 def get_site_url():  # regex sso url
@@ -12,13 +13,13 @@ def get_site_url():  # regex sso url
     return url
 
 def fleets_active():
-    return 'allianceauth.optimer' in settings.INSTALLED_APPS
+    return apps.is_installed('allianceauth.optimer')
 
 def timers_active():
-    return 'allianceauth.timerboard' in settings.INSTALLED_APPS
+    return apps.is_installed('allianceauth.timerboard')
 
 def hr_active():
-    return 'allianceauth.hrapplications' in settings.INSTALLED_APPS
-
+    return apps.is_installed('allianceauth.hrapplications')
+    
 def srp_active():
-    return 'allianceauth.srp' in settings.INSTALLED_APPS
+    return apps.is_installed('allianceauth.srp')
