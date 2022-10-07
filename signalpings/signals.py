@@ -6,6 +6,7 @@ from allianceauth.groupmanagement.models import GroupRequest
 from allianceauth.authentication.models import UserProfile, CharacterOwnership, EveCharacter
 from allianceauth.eveonline.evelinks.eveimageserver import type_icon_url, character_portrait_url
 from allianceauth.eveonline.evelinks.evewho import character_url, corporation_url
+from allianceauth.eveonline.evelinks.dotlan import solar_system_url
 from .models import GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
 import requests
 import json
