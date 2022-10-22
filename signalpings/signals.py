@@ -320,7 +320,7 @@ if fleets_active():
     @receiver(post_save, sender=OpTimer)
     def fleet_saved(sender, instance, created, **kwargs):
         try:
-            logger.debug(f"New signal fleet created for {instance.operation_name})
+            logger.debug(f"New signal fleet created for {instance.operation_name}")
             url = get_site_url() + reverse("optimer:view")
             main_char = instance.eve_character
             system = instance.system
