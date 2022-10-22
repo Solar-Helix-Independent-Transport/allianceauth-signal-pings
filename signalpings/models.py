@@ -1,8 +1,10 @@
-import requests
 import json
 
-from django.db import models
+import requests
+
 from django.contrib.auth.models import Group
+from django.db import models
+
 from allianceauth.eveonline.models import EveCorporationInfo
 
 
@@ -15,8 +17,7 @@ class WebHook(models.Model):
     def send_embed(self, embed):
         custom_headers = {'Content-Type': 'application/json'}
         data = '{"embeds": [%s]}' % json.dumps(embed)
-        r = requests.post(self.webhook_url, headers=custom_headers,
-                          data=data)
+        r = requests.post(self.webhook_url, headers=custom_headers, data=data)
         r.raise_for_status()
 
     class Meta:
@@ -24,7 +25,7 @@ class WebHook(models.Model):
         verbose_name_plural = 'Webhooks'
 
     def __str__(self):
-        return '{}'.format(self.name)
+        return f'{self.name}'
 
 
 class GroupSignal(models.Model):
@@ -34,7 +35,7 @@ class GroupSignal(models.Model):
     webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '"{}" using "{}"'.format(self.group.name, self.webhook.name)
+        return f'"{self.group.name}" using "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'Group Signal'
@@ -49,7 +50,7 @@ class FleetSignal(models.Model):
     ignore_past_fleets = models.BooleanField(default=True)
 
     def __str__(self):
-        return 'Send Fleets to "{}"'.format(self.webhook.name)
+        return f'Send Fleets to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'Fleet Signal'
@@ -65,7 +66,7 @@ class TimerSignal(models.Model):
     corporation = models.ForeignKey(EveCorporationInfo, on_delete=models.CASCADE, blank=True, null=True, default=None)
 
     def __str__(self):
-        return 'Send Timers to "{}"'.format(self.webhook.name)
+        return f'Send Timers to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'Timer Board Signal'
@@ -81,7 +82,7 @@ class HRAppSignal(models.Model):
     notify_comments = models.BooleanField(default=True)
 
     def __str__(self):
-        return 'Send HR to "{}"'.format(self.webhook.name)
+        return f'Send HR to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'HR Application Signal'
@@ -96,7 +97,7 @@ class CharacterSignal(models.Model):
     webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'Send Characters to "{}"'.format(self.webhook.name)
+        return f'Send Characters to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'Character Signal'
@@ -109,7 +110,7 @@ class StateSignal(models.Model):
     webhook = models.ForeignKey(WebHook, on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'Send States to "{}"'.format(self.webhook.name)
+        return f'Send States to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'State Change Signal'
@@ -130,7 +131,7 @@ class SRPSignal(models.Model):
     mention_requestor = models.BooleanField(default=True)
 
     def __str__(self):
-        return 'Send SRP to "{}"'.format(self.webhook.name)
+        return f'Send SRP to "{self.webhook.name}"'
 
     class Meta:
         verbose_name = 'SRP Signal'

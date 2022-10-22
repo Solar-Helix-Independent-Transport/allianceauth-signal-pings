@@ -1,4 +1,5 @@
 import os
+
 from setuptools import find_packages, setup
 
 from signalpings import __version__
@@ -41,5 +42,3 @@ setup(
         "allianceauth>=2.15.1,<4.0.0",
     ],
 )
-
-

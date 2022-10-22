@@ -1,6 +1,8 @@
-from django.conf import settings
-from django.apps import apps
 import re
+
+from django.apps import apps
+from django.conf import settings
+
 
 def get_site_url():  # regex sso url
     regex = r"^(.+)\/s.+"
@@ -20,6 +22,6 @@ def timers_active():
 
 def hr_active():
     return apps.is_installed('allianceauth.hrapplications')
-    
+
 def srp_active():
     return apps.is_installed('allianceauth.srp')

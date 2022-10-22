@@ -1,7 +1,11 @@
 from django.contrib import admin
 
-from .models import WebHook, GroupSignal, TimerSignal, FleetSignal, HRAppSignal, CharacterSignal, StateSignal, SRPSignal
-from .app_settings import fleets_active, timers_active, hr_active, srp_active
+from .app_settings import fleets_active, hr_active, srp_active, timers_active
+from .models import (
+    CharacterSignal, FleetSignal, GroupSignal, HRAppSignal, SRPSignal,
+    StateSignal, TimerSignal, WebHook,
+)
+
 
 class WebHookAdmin(admin.ModelAdmin):
     list_display=('name', 'enabled')
