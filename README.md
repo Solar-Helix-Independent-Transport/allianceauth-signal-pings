@@ -6,7 +6,10 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 
 - Group Join / Group Leave
 - HR applications
-- Timers and Fleets
+- Timerboard Create/Update/Deletes
+- Fleet Operation Create/Update/Deletes
+- CharacterOwnership Gain and Losses
+- SRP Requests with (WIP: Discord @mentions)
 
 ## TODO/Wishlist
 
@@ -17,8 +20,8 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 1. `pip install allianceauth-signal-pings`
 2. add `'signalpings',` to INSTALLED_APPS in your local.py
 3. migrate database and restart auth
-4. Setup your webhooks in the admin panel 
-5. setup groups to ping in the admin panel
+4. Setup your webhooks in the admin panel
+5. setup signals to ping for in the admin panel
 6. prepare for pingagedon.
 
 ## Pics 

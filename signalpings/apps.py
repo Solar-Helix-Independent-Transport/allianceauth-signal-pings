@@ -6,4 +6,4 @@ class SignalPingsConfig(AppConfig):
     verbose_name = 'Signal Pings'
 
     def ready(self):
-        import signalpings.signals
+         import signalpings.signals
