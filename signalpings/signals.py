@@ -44,22 +44,36 @@ def new_req(sender, instance, created, **kwargs):
                          instance.user.profile.main_character)
             url = get_site_url() + reverse("groupmanagement:management")
             main_char = instance.user.profile.main_character
-            group = instance.group.name
+
+            if main_char.alliance_ticker is not None:
+                footer_string = f"{main_char.character_name}  [{main_char.corporation_ticker}] - [{main_char.alliance_ticker}]"
+            else:
+                footer_string = f"{main_char.character_name}  [{main_char.corporation_ticker}]"
 
             if not instance.leave_request:
-                embed = {'title': "New Group Request",
-                         'description': ("From **{}** to join **{}**".format(main_char.character_name, group)),
-                         'color': BLUE,
-                         'image': {'url': main_char.portrait_url_128},
-                         'url': url
-                         }
+                embed = {
+                    'title': "New Group Request",
+                    'description': f"From **{main_char.character_name}** to join **{instance.group.name}**",
+                    'color': BLUE,
+                    'image': {'url': main_char.portrait_url_128},
+                    'url': url,
+                    "footer": {
+                        "icon_url": main_char.portrait_url_64,
+                        "text": footer_string
+                        }
+                    }
             else:
-                embed = {'title': "New Group Leave Request",
-                         'color': RED,
-                         'description': ("From **{}** to leave **{}**".format(main_char.character_name, group)),
-                         'image': {'url': main_char.portrait_url_128},
-                         'url': url
-                         }
+                embed = {
+                    'title': "New Group Leave Request",
+                    'color': RED,
+                    'description': f"From **{main_char.character_name}** to leave **{instance.group.name}**",
+                    'image': {'url': main_char.portrait_url_128},
+                    'url': url,
+                    "footer": {
+                        "icon_url": main_char.portrait_url_64,
+                        "text": footer_string
+                        }
+                    }
 
             hooks = GroupSignal.objects.filter(
                 group=instance.group).select_related('webhook')
@@ -425,10 +439,10 @@ if hr_active():
                 message_description = ("**{}** Application to **{}** {} by **{}**".format(main_char, corp, message, application_approver))
                 sending = True
 
-            
+
             if sending == True:
                 hooks = HRAppSignal.objects.all().select_related('webhook')
-                embed = {'title': message_title, 
+                embed = {'title': message_title,
                     'description': message_description,
                     'url': url,
                     'color': message_colour,
@@ -464,7 +478,7 @@ if hr_active():
             message_colour = BLUE
             message_description = ("**{}** Commented on **{}**'s Application to **{}**".format(comment_main_char,application_main_char,corp))
 
-            embed = {'title': message, 
+            embed = {'title': message,
                     'description': message_description,
                     'url': url,
                     'color': message_colour,
@@ -479,7 +493,7 @@ if hr_active():
                         "text": "{}  [{}]".format(instance.application.user.profile.main_character.character_name, instance.application.user.profile.main_character.corporation_ticker)
                     }
                 }
-            
+
             hooks = HRAppSignal.objects.all().select_related('webhook')
 
             for hook in hooks:
