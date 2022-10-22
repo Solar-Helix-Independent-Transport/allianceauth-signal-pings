@@ -24,15 +24,18 @@ This is a simple plugin for [Alliance Auth](https://gitlab.com/allianceauth/alli
 5. setup signals to ping for in the admin panel
 6. prepare for pingagedon.
 
-## Pics 
+## Pics
 
 ### Admin Create Webhooks
+
 ![Imgur](https://i.imgur.com/CgoA7za.png)
 
 ### Admin create groups to signal
+
 ![Imgur](https://i.imgur.com/R7Fb7S9.png)
 
 ###  Pings
+
 ![Imgur](https://i.imgur.com/UfojsOk.png)
 
 ## Contribute
