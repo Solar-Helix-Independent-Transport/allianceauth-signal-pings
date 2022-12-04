@@ -442,7 +442,7 @@ if hr_active():
                 "](" + corporation_url(instance.form.corp.corporation_id) + ")"
             sending = False
             if created:
-                message = "New Corp Application"
+                message_title = "New Corp Application"
                 message_colour = GREEN
                 message_description = (
                     f"**{main_char}** Has applied to **{corp}**")
